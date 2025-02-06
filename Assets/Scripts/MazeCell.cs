@@ -23,8 +23,11 @@ public class MazeCell : MonoBehaviour
     public bool IsVisited { get; private set; }
 
     // Helper Methods
+    // To be called whenever a Cell is visited by the algorithm/generator. 
     public void Visit()
     {
-
+        IsVisited = True;
+        // Disable the Unvisited Maze Cell, so the walls will become visible. 
+        _unvisitedMazeCell.SetActive(false);
     }
 }
