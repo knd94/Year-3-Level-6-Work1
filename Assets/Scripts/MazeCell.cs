@@ -5,7 +5,7 @@ using UnityEngine;
 public class MazeCell : MonoBehaviour
 {
     [SerializeField]
-    private GameObject _leftWalll;
+    private GameObject _leftWall;
 
     [SerializeField]
     private GameObject _rightWall;
@@ -26,7 +26,7 @@ public class MazeCell : MonoBehaviour
     // To be called whenever a Cell is visited by the algorithm/generator. 
     public void Visit()
     {
-        IsVisited = True;
+        IsVisited = true;
         // Disable the Unvisited Maze Cell, so the walls will become visible. 
         _unvisitedMazeCell.SetActive(false);
     }
@@ -34,26 +34,26 @@ public class MazeCell : MonoBehaviour
     // Helper Methods to clear each wall.
     public void ClearLeftWall()
     {
-    // Deactivate the Left Wall.
-    _leftWall.SetActive(false)
+        // Deactivate the Left Wall.
+        _leftWall.SetActive(false);
     }
 
     public void ClearRightWall()
     {
-    // Deactivate the Right Wall.
-    _rightWall.SetActive(false)
+        // Deactivate the Right Wall.
+        _rightWall.SetActive(false);
     }
 
     public void ClearFrontWall()
     {
-    // Deactivate the Front Wall.
-    _FrontWall.SetActive(false)
+        // Deactivate the Front Wall.
+        _frontWall.SetActive(false);
     }
 
     public void ClearBackWall()
     {
-    // Deactivate the Back Wall.
-    _backWall.SetActive(false)
+        // Deactivate the Back Wall.
+        _backWall.SetActive(false);
     }
 
     
