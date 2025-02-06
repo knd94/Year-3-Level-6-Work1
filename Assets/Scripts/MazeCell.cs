@@ -30,4 +30,31 @@ public class MazeCell : MonoBehaviour
         // Disable the Unvisited Maze Cell, so the walls will become visible. 
         _unvisitedMazeCell.SetActive(false);
     }
+
+    // Helper Methods to clear each wall.
+    public void ClearLeftWall()
+    {
+    // Deactivate the Left Wall.
+    _leftWall.SetActive(false)
+    }
+
+    public void ClearRightWall()
+    {
+    // Deactivate the Right Wall.
+    _rightWall.SetActive(false)
+    }
+
+    public void ClearFrontWall()
+    {
+    // Deactivate the Front Wall.
+    _FrontWall.SetActive(false)
+    }
+
+    public void ClearBackWall()
+    {
+    // Deactivate the Back Wall.
+    _backWall.SetActive(false)
+    }
+
+    
 }
