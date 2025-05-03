@@ -3,20 +3,56 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// Singleton maze generator that builds a procedural maze and provides utility methods
+/// for ML Agents (random start/goal positions, maze dimensions).
+/// </summary>
 public class MazeGenerator : MonoBehaviour
 {
+    public static MazeGenerator Instance { get; private set; }
+
+    [Header("Maze Cell Prefab")]
     [SerializeField]
     private MazeCell _mazeCellPrefab;
 
+    [Header("Maze Dimensions")]
     [SerializeField]
-    private int _mazeWidth;
-
+    private int _mazeWidth = 10;
     [SerializeField]
-    private int _mazeDepth;
+    private int _mazeDepth = 10;
 
+    /// <summary>
+    /// Logical grid of cells instantiated in the scene.
+    /// </summary>
     private MazeCell[,] _mazeGrid;
 
-    void Start()
+    /// <summary>
+    /// Exposed for agents to normalize observations.
+    /// </summary>
+    public Vector2Int MazeSize => new Vector2Int(_mazeWidth, _mazeDepth);
+
+    private void Awake()
+    {
+        // Enforce singleton pattern
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    private void Start()
+    {
+        BuildGrid();
+        GenerateMaze(null, _mazeGrid[0, 0]);
+    }
+
+    /// <summary>
+    /// Instantiates the grid of MazeCell prefabs.
+    /// </summary>
+    private void BuildGrid()
     {
         _mazeGrid = new MazeCell[_mazeWidth, _mazeDepth];
 
@@ -24,24 +60,24 @@ public class MazeGenerator : MonoBehaviour
         {
             for (int z = 0; z < _mazeDepth; z++)
             {
-                _mazeGrid[x, z] = Instantiate(_mazeCellPrefab, new Vector3(x, 0, z), Quaternion.identity);
+                Vector3 pos = new Vector3(x + 0.5f, 0f, z + 0.5f);
+                _mazeGrid[x, z] = Instantiate(_mazeCellPrefab, pos, Quaternion.identity, transform);
             }
         }
-
-        GenerateMaze(null, _mazeGrid[0, 0]);
     }
 
+    /// <summary>
+    /// Recursive backtracking maze generation.
+    /// </summary>
     private void GenerateMaze(MazeCell previousCell, MazeCell currentCell)
     {
         currentCell.Visit();
         ClearWalls(previousCell, currentCell);
 
         MazeCell nextCell;
-
         do
         {
             nextCell = GetNextUnvisitedCell(currentCell);
-
             if (nextCell != null)
             {
                 GenerateMaze(currentCell, nextCell);
@@ -51,91 +87,67 @@ public class MazeGenerator : MonoBehaviour
 
     private MazeCell GetNextUnvisitedCell(MazeCell currentCell)
     {
-        var unvisitedCells = GetUnvisitedCells(currentCell);
-
-        return unvisitedCells.OrderBy(_ => Random.Range(1, 10)).FirstOrDefault();
+        var unvisited = GetUnvisitedNeighbors(currentCell);
+        return unvisited.OrderBy(_ => Random.value).FirstOrDefault();
     }
 
-    private IEnumerable<MazeCell> GetUnvisitedCells(MazeCell currentCell)
+    private IEnumerable<MazeCell> GetUnvisitedNeighbors(MazeCell cell)
     {
-        int x = (int)currentCell.transform.position.x;
-        int z = (int)currentCell.transform.position.z;
+        int x = Mathf.FloorToInt(cell.transform.position.x);
+        int z = Mathf.FloorToInt(cell.transform.position.z);
 
-        if (x + 1 < _mazeWidth)
-        {
-            var cellToRight = _mazeGrid[x + 1, z];
-
-            if (cellToRight.IsVisited == false)
-            {
-                yield return cellToRight;
-            }
-        }
-
-        if (x - 1 >= 0)
-        {
-            var cellToLeft = _mazeGrid[x - 1, z];
-
-            if (cellToLeft.IsVisited == false)
-            {
-                yield return cellToLeft;
-            }
-        }
-
-        if (z + 1 < _mazeDepth)
-        {
-            var cellToFront = _mazeGrid[x, z + 1];
-
-            if (cellToFront.IsVisited == false)
-            {
-                yield return cellToFront;
-            }
-        }
-
-        if (z - 1 >= 0)
-        {
-            var cellToBack = _mazeGrid[x, z - 1];
-
-            if (cellToBack.IsVisited == false)
-            {
-                yield return cellToBack;
-            }
-        }
+        // Right
+        if (x + 1 < _mazeWidth && !_mazeGrid[x + 1, z].IsVisited)
+            yield return _mazeGrid[x + 1, z];
+        // Left
+        if (x - 1 >= 0 && !_mazeGrid[x - 1, z].IsVisited)
+            yield return _mazeGrid[x - 1, z];
+        // Forward
+        if (z + 1 < _mazeDepth && !_mazeGrid[x, z + 1].IsVisited)
+            yield return _mazeGrid[x, z + 1];
+        // Back
+        if (z - 1 >= 0 && !_mazeGrid[x, z - 1].IsVisited)
+            yield return _mazeGrid[x, z - 1];
     }
 
-    private void ClearWalls(MazeCell previousCell, MazeCell currentCell)
+    private void ClearWalls(MazeCell prev, MazeCell curr)
     {
-        if (previousCell == null)
-        {
-            return;
-        }
+        if (prev == null) return;
 
-        if (previousCell.transform.position.x < currentCell.transform.position.x)
-        {
-            previousCell.ClearRightWall();
-            currentCell.ClearLeftWall();
-            return;
-        }
+        Vector3 p = prev.transform.position;
+        Vector3 c = curr.transform.position;
 
-        if (previousCell.transform.position.x > currentCell.transform.position.x)
+        if (p.x < c.x)
         {
-            previousCell.ClearLeftWall();
-            currentCell.ClearRightWall();
-            return;
+            prev.ClearRightWall(); curr.ClearLeftWall();
         }
-
-        if (previousCell.transform.position.z < currentCell.transform.position.z)
+        else if (p.x > c.x)
         {
-            previousCell.ClearFrontWall();
-            currentCell.ClearBackWall();
-            return;
+            prev.ClearLeftWall(); curr.ClearRightWall();
         }
-
-        if (previousCell.transform.position.z > currentCell.transform.position.z)
+        else if (p.z < c.z)
         {
-            previousCell.ClearBackWall();
-            currentCell.ClearFrontWall();
-            return;
+            prev.ClearFrontWall(); curr.ClearBackWall();
+        }
+        else if (p.z > c.z)
+        {
+            prev.ClearBackWall(); curr.ClearFrontWall();
         }
     }
 
+    /// <summary>
+    /// Returns a random position on an empty (visited or unvisited) cell.
+    /// </summary>
+    public Vector3 GetRandomEmptyCellWorldPos()
+    {
+        int x = Random.Range(0, _mazeWidth);
+        int z = Random.Range(0, _mazeDepth);
+        // Center of cell at y=0.5f so agent sits above floor
+        return new Vector3(x + 0.5f, 0.5f, z + 0.5f);
+    }
+
+    /// <summary>
+    /// For now, goal can be any random cell too.
+    /// </summary>
+    public Vector3 GetRandomGoalCellWorldPos() => GetRandomEmptyCellWorldPos();
 }
