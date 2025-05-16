@@ -1,0 +1,42 @@
+{
+    "name": "root",
+    "metadata": {
+        "timer_format_version": "0.1.0",
+        "start_time_seconds": "1747198053",
+        "python_version": "3.10.12 | packaged by Anaconda, Inc. | (main, Jul  5 2023, 19:01:18) [MSC v.1916 64 bit (AMD64)]",
+        "command_line_arguments": "D:\\Miniconda\\envs\\mlagents\\Scripts\\mlagents-learn config/maze_ppo.yaml --run-id=run2 --force",
+        "mlagents_version": "1.1.0",
+        "mlagents_envs_version": "1.1.0",
+        "communication_protocol_version": "1.5.0",
+        "pytorch_version": "2.2.2+cu121",
+        "numpy_version": "1.23.5",
+        "end_time_seconds": "1747198129"
+    },
+    "total": 76.3282452999847,
+    "count": 1,
+    "self": 0.006962400046177208,
+    "children": {
+        "run_training.setup": {
+            "total": 0.09761129994876683,
+            "count": 1,
+            "self": 0.09761129994876683
+        },
+        "TrainerController.start_learning": {
+            "total": 76.22367159998976,
+            "count": 1,
+            "self": 0.00014030002057552338,
+            "children": {
+                "TrainerController._reset_env": {
+                    "total": 76.22351549996529,
+                    "count": 1,
+                    "self": 76.22351549996529
+                },
+                "TrainerController._save_models": {
+                    "total": 1.580000389367342e-05,
+                    "count": 1,
+                    "self": 1.580000389367342e-05
+                }
+            }
+        }
+    }
+}

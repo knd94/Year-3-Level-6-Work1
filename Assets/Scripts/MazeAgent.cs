@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Unity.MLAgents;
+using Unity.MLAgents.Policies;
 using Unity.MLAgents.Sensors;
 using Unity.MLAgents.Actuators;
 
@@ -15,21 +16,45 @@ public class MazeAgent : Agent
 
     public override void Initialize()
     {
+        // Cache Rigidbody
         rBody = GetComponent<Rigidbody>();
+
+        // Disable vertical physics
+        rBody.useGravity = false;
+        rBody.constraints = RigidbodyConstraints.FreezePositionY
+                          | RigidbodyConstraints.FreezeRotationX
+                          | RigidbodyConstraints.FreezeRotationZ;
+
+        // Auto‑toggle behavior type:
+        var bp = GetComponent<BehaviorParameters>();
+        if (Academy.Instance.IsCommunicatorOn)
+        {
+            // Python trainer is connected → RL training
+            bp.BehaviorType = BehaviorType.Default;
+        }
+        else
+        {
+            // No trainer → manual (heuristic) testing
+            bp.BehaviorType = BehaviorType.HeuristicOnly;
+            // Ensure periodic decisions for Heuristic
+            var dr = gameObject.GetComponent<DecisionRequester>();
+            if (dr == null) dr = gameObject.AddComponent<DecisionRequester>();
+            dr.DecisionPeriod = 1;
+        }
     }
 
     public override void OnEpisodeBegin()
     {
-        // Reset agent velocity & position
+        // Reset velocities
         rBody.linearVelocity = Vector3.zero;
         rBody.angularVelocity = Vector3.zero;
 
-        // Randomize start (you’ll need to implement your own sampling)
+        // Randomize agent start
         Vector3 randomPos = MazeGenerator.Instance.GetRandomEmptyCellWorldPos();
         transform.position = randomPos + Vector3.up * 0.5f;
         transform.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
 
-        // Randomize or re‑place goal
+        // Randomize goal position
         Vector3 goalPos = MazeGenerator.Instance.GetRandomGoalCellWorldPos();
         goalTransform.position = goalPos + Vector3.up * 0.5f;
 
@@ -39,40 +64,39 @@ public class MazeAgent : Agent
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        // 1. Agent‑to‑goal vector in local space
+        // 1) Vector to goal in local space
         Vector3 toGoalWorld = goalTransform.position - transform.position;
         Vector3 toGoalLocal = transform.InverseTransformVector(toGoalWorld);
 
-        // 2. Normalize x and z by maze dimensions (leave y untouched or normalized by 1)
+        // 2) Normalize by maze dimensions
         Vector2Int size = MazeGenerator.Instance.MazeSize;
-        Vector3 normalizedObs = new Vector3(
+        Vector3 norm = new Vector3(
             toGoalLocal.x / size.x,
-            toGoalLocal.y,                // or divide by some constant if you want to include height
+            toGoalLocal.y,              // optional: keep raw or divide by 1
             toGoalLocal.z / size.y
         );
+        sensor.AddObservation(norm);
 
-        sensor.AddObservation(normalizedObs);
-
-        // 3. Agent’s forward vector
+        // 3) Agent’s forward direction
         sensor.AddObservation(transform.forward);
 
-        // 4. RayPerceptionSensor3D will handle wall sensing automatically
+        // 4) RayPerceptionSensor3D component (if added) handles walls
     }
 
     public override void OnActionReceived(ActionBuffers aBuffers)
     {
-        // Continuous actions: [0] = move, [1] = turn
         float move = Mathf.Clamp(aBuffers.ContinuousActions[0], -1f, 1f);
         float turn = Mathf.Clamp(aBuffers.ContinuousActions[1], -1f, 1f);
 
-        // Apply motion
+        // Apply rotation & translation
         transform.Rotate(Vector3.up, turn * turnSpeed * Time.deltaTime);
-        rBody.MovePosition(transform.position + transform.forward * move * moveSpeed * Time.deltaTime);
+        Vector3 newPos = transform.position + transform.forward * move * moveSpeed * Time.deltaTime;
+        rBody.MovePosition(newPos);
 
-        // Small time penalty to encourage shorter paths
+        // Small time penalty
         AddReward(-0.001f);
 
-        // (Optional) Detect dead‑end: if speed < ε after move → penalty
+        // Penalty if stuck while trying to move
         if (Mathf.Abs(move) > 0.1f && rBody.linearVelocity.magnitude < 0.01f)
         {
             AddReward(-0.05f);
@@ -83,7 +107,6 @@ public class MazeAgent : Agent
     {
         if (col.collider.CompareTag("Wall"))
         {
-            // Hitting a wall is bad
             AddReward(-0.1f);
         }
     }
@@ -95,15 +118,16 @@ public class MazeAgent : Agent
             float timeTaken = Time.time - startTime;
             AddReward(+10f);
             Debug.Log($"Episode completed in {timeTaken:F2} seconds.");
-            EndEpisode();
+            Invoke(nameof(EndEpisode), 1f);
         }
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)
     {
-        // Optional: manual testing with keyboard
         var cont = actionsOut.ContinuousActions;
-        cont[0] = Input.GetKey(KeyCode.W) ? 1f : (Input.GetKey(KeyCode.S) ? -1f : 0f);
-        cont[1] = Input.GetKey(KeyCode.D) ? 1f : (Input.GetKey(KeyCode.A) ? -1f : 0f);
+        cont[0] = Input.GetKey(KeyCode.W) ? 1f
+                  : Input.GetKey(KeyCode.S) ? -1f : 0f;
+        cont[1] = Input.GetKey(KeyCode.D) ? 1f
+                  : Input.GetKey(KeyCode.A) ? -1f : 0f;
     }
 }

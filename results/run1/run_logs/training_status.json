@@ -1,0 +1,65 @@
+{
+    "MazeBrain": {
+        "checkpoints": [
+            {
+                "steps": 1341478,
+                "file_path": "results\\run1\\MazeBrain\\MazeBrain-1341478.onnx",
+                "reward": null,
+                "creation_time": 1747357092.4507306,
+                "auxillary_file_paths": [
+                    "results\\run1\\MazeBrain\\MazeBrain-1341478.pt"
+                ]
+            },
+            {
+                "steps": 1420683,
+                "file_path": "results\\run1\\MazeBrain\\MazeBrain-1420683.onnx",
+                "reward": null,
+                "creation_time": 1747357878.0904787,
+                "auxillary_file_paths": [
+                    "results\\run1\\MazeBrain\\MazeBrain-1420683.pt"
+                ]
+            },
+            {
+                "steps": 1438859,
+                "file_path": "results\\run1\\MazeBrain\\MazeBrain-1438859.onnx",
+                "reward": null,
+                "creation_time": 1747358076.1217434,
+                "auxillary_file_paths": [
+                    "results\\run1\\MazeBrain\\MazeBrain-1438859.pt"
+                ]
+            },
+            {
+                "steps": 1499787,
+                "file_path": "results\\run1\\MazeBrain\\MazeBrain-1499787.onnx",
+                "reward": null,
+                "creation_time": 1747358564.7058516,
+                "auxillary_file_paths": [
+                    "results\\run1\\MazeBrain\\MazeBrain-1499787.pt"
+                ]
+            },
+            {
+                "steps": 1587339,
+                "file_path": "results\\run1\\MazeBrain\\MazeBrain-1587339.onnx",
+                "reward": null,
+                "creation_time": 1747359205.8408546,
+                "auxillary_file_paths": [
+                    "results\\run1\\MazeBrain\\MazeBrain-1587339.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 1587339,
+            "file_path": "results\\run1\\MazeBrain.onnx",
+            "reward": null,
+            "creation_time": 1747359205.8408546,
+            "auxillary_file_paths": [
+                "results\\run1\\MazeBrain\\MazeBrain-1587339.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "1.1.0",
+        "torch_version": "2.2.2+cu121"
+    }
+}
