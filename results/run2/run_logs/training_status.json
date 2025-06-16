@@ -1,4 +1,35 @@
 {
+    "MazeBrain": {
+        "checkpoints": [
+            {
+                "steps": 499906,
+                "file_path": "results\\run2\\MazeBrain\\MazeBrain-499906.onnx",
+                "reward": null,
+                "creation_time": 1749644545.9693458,
+                "auxillary_file_paths": [
+                    "results\\run2\\MazeBrain\\MazeBrain-499906.pt"
+                ]
+            },
+            {
+                "steps": 924098,
+                "file_path": "results\\run2\\MazeBrain\\MazeBrain-924098.onnx",
+                "reward": null,
+                "creation_time": 1749647175.1715567,
+                "auxillary_file_paths": [
+                    "results\\run2\\MazeBrain\\MazeBrain-924098.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 924098,
+            "file_path": "results\\run2\\MazeBrain.onnx",
+            "reward": null,
+            "creation_time": 1749647175.1715567,
+            "auxillary_file_paths": [
+                "results\\run2\\MazeBrain\\MazeBrain-924098.pt"
+            ]
+        }
+    },
     "metadata": {
         "stats_format_version": "0.3.0",
         "mlagents_version": "1.1.0",
